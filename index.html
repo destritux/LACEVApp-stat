@@ -1189,7 +1189,7 @@
             const padLeft = 95; // Margem aumentada para dar espaço aos números
             const padRight = 20;
             const padTop = 30;
-            const padBottom = 40;
+            const padBottom = 55;
             const plotWidth = width - padLeft - padRight;
             const plotHeight = height - padTop - padBottom;
             
@@ -1266,10 +1266,14 @@
                 ctx.stroke();
                 
                 ctx.fillStyle = textColor;
-                ctx.font = 'bold 12px Inter';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.fillText(c, x, height - padBottom + 10);
+                ctx.font = 'bold 11px Inter';
+                ctx.save();
+                ctx.translate(x, height - padBottom + 12);
+                ctx.rotate(-Math.PI / 6); // -30 graus de rotação
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(c, 0, 0);
+                ctx.restore();
             });
             
             const labelText = metricSelect.options[metricSelect.selectedIndex].text;
