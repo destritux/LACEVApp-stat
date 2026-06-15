@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>LacevApp - Painel Científico de Eletrofisiologia</title>
+    <link rel="icon" type="image/x-icon" href="assets/lacev-App.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/lacev-App.ico">
     <!-- Carrega fontes modernas e Chart.js via CDN -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -698,10 +700,13 @@
     <div class="container">
         
         <!-- Header Section -->
-        <div class="header-container">
-            <div class="header-left">
-                <h1>LacevApp - Plant Electrophysiology Analysis</h1>
-                <p>Scientific Report & Statistical Comparisons</p>
+        <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+            <div class="header-left" style="display: flex; align-items: center; gap: 20px;">
+                <img src="assets/lacev-App.png" alt="LacevApp Logo" style="height: 65px; width: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: white; padding: 3px;">
+                <div>
+                    <h1 style="font-size: 2.1rem; margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800;">LacevApp - Plant Electrophysiology</h1>
+                    <p style="margin: 4px 0 0 0; color: #a7f3d0; font-weight: 300; font-size: 1.05rem;">Scientific Report & Statistical Comparisons</p>
+                </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button id="btn-load-another" class="theme-toggle-btn" style="display: none; background-color: var(--accent);" onclick="resetLoader()">Load Another Report</button>
