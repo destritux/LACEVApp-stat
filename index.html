@@ -1237,6 +1237,14 @@
                         <div class="accuracy-label" style="font-size:0.75rem; margin-top:5px;" id="accuracy-details-label">Baseado em teste (70/30)</div>
                     </div>
                 </div>
+                
+                <div class="confusion-matrix-card" id="pairwise-accuracy-card" style="display:none; margin-top: 25px;">
+                    <h3 style="margin-top:0;">Matriz de Acurácia Pareada (Classificação Binária par a par)</h3>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">Cada célula indica a acurácia de um classificador treinado para discriminar especificamente entre o par de classes da linha e coluna. Valores mais altos (em verde escuro) apontam para maior facilidade de diferenciação entre as duas classes.</p>
+                    <div id="pairwise-accuracy-container">
+                        <i>Aguardando dados...</i>
+                    </div>
+                </div>
             </div>
 
             <!-- Seção de Árvore de Decisão Interativa -->
@@ -1329,6 +1337,7 @@
         let confusionMatrix = null;
         let decisionTree = null;
         let activeFeatureValues = {};
+        let pairwiseAccuracy = null;
 
         let currentMode = 'raw';
         let rightChartMode = 'bar';
@@ -1990,6 +1999,7 @@
 
             // Draw new Machine Learning elements
             drawConfusionMatrix();
+            drawPairwiseAccuracy();
             drawDecisionTree();
         }
 
@@ -2051,6 +2061,58 @@
             
             html += '</table>';
             matrixContainer.innerHTML = html;
+        }
+
+        // Pairwise Accuracy Matrix Drawing
+        function drawPairwiseAccuracy() {
+            const card = document.getElementById('pairwise-accuracy-card');
+            const container = document.getElementById('pairwise-accuracy-container');
+            
+            if (!pairwiseAccuracy || !pairwiseAccuracy.classes || pairwiseAccuracy.classes.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+            
+            card.style.display = 'block';
+            
+            const classes = pairwiseAccuracy.classes;
+            const matrix = pairwiseAccuracy.matrix;
+            
+            let html = '<table class="confusion-table">';
+            
+            // Header columns
+            html += '<tr><th style="border:none;"></th>';
+            classes.forEach(c => {
+                html += `<th style="color:var(--text-primary); font-weight:600;">${c}</th>`;
+            });
+            html += '</tr>';
+            
+            // Rows
+            classes.forEach((rowClass, rowIdx) => {
+                html += '<tr>';
+                html += `<th style="text-align:right; font-weight:600; min-width:80px;">${rowClass}</th>`;
+                
+                classes.forEach((colClass, colIdx) => {
+                    if (rowIdx === colIdx) {
+                        html += `<td style="background-color: var(--bg-main); color: var(--text-secondary); font-style: italic; font-weight:normal;">-</td>`;
+                    } else {
+                        const accVal = matrix[rowIdx][colIdx];
+                        const normalizedAcc = Math.max(0, (accVal - 0.5) / 0.5);
+                        const alpha = normalizedAcc.toFixed(2);
+                        const bgColor = `rgba(16, 185, 129, ${alpha})`;
+                        const isActive = normalizedAcc > 0.4 ? 'matrix-cell-active' : '';
+                        
+                        const textCol = isActive ? '#ffffff' : 'var(--text-primary)';
+                        
+                        html += `<td class="matrix-cell ${isActive}" style="background-color:${bgColor}; color:${textCol};" title="Acurácia entre ${rowClass} e ${colClass}">${(accVal * 100).toFixed(1)}%</td>`;
+                    }
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            container.innerHTML = html;
         }
 
         // Decision Tree Drawing
@@ -2241,6 +2303,7 @@
             boxplot = data.boxplot;
             confusionMatrix = data.confusion_matrix || null;
             decisionTree = data.decision_tree || null;
+            pairwiseAccuracy = data.pairwise_accuracy || null;
             
             // Oculta elementos de upload e placeholders
             document.getElementById('data-loader-container').style.display = 'none';
@@ -2261,6 +2324,7 @@
             confusionMatrix = null;
             decisionTree = null;
             activeFeatureValues = {};
+            pairwiseAccuracy = null;
             
             // Clear HTML containers
             document.getElementById('experiment-description-text').innerHTML = 'Please load a report data file to view the description.';
@@ -2272,6 +2336,8 @@
             document.getElementById('ols-container').innerHTML = '';
             document.getElementById('confusion-matrix-container').innerHTML = '<i>Aguardando dados...</i>';
             document.getElementById('accuracy-value-display').textContent = '--%';
+            document.getElementById('pairwise-accuracy-container').innerHTML = '<i>Aguardando dados...</i>';
+            document.getElementById('pairwise-accuracy-card').style.display = 'none';
             document.getElementById('dt-simulator-grid').innerHTML = '<p><i>Nenhuma árvore carregada.</i></p>';
             document.getElementById('decision-tree-root-container').innerHTML = '';
             document.getElementById('ml-accuracy-section').style.display = 'none';
