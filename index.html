@@ -868,20 +868,23 @@
 
         /* Tree Visualization CSS */
         .tree-scroll-container {
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 30px 20px;
+            overflow: hidden;
+            padding: 15px 10px;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             background: var(--bg-main);
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            min-height: 250px;
+            position: relative;
         }
         .tree-wrapper {
             display: inline-block;
             text-align: center;
-            min-width: 100%;
-            padding: 10px;
+            transform-origin: top center;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 5px;
         }
         .tree-node-wrapper {
             display: flex;
@@ -893,9 +896,9 @@
             background: var(--bg-card);
             border: 2px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 6px 10px;
-            min-width: 110px;
-            max-width: 160px;
+            padding: 5px 8px;
+            min-width: 90px;
+            max-width: 130px;
             box-shadow: var(--shadow);
             z-index: 5;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -912,7 +915,7 @@
             border-color: #34d399;
         }
         .tree-node-title {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -920,12 +923,12 @@
             margin-bottom: 2px;
         }
         .tree-node-value {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         .tree-node-info {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-secondary);
             margin-top: 4px;
             border-top: 1px solid var(--border);
@@ -933,13 +936,13 @@
         }
         .leaf-indicator {
             display: inline-block;
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             margin-right: 4px;
         }
         .expand-indicator {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             margin-top: 4px;
             font-weight: bold;
             color: var(--primary);
@@ -959,7 +962,7 @@
             display: flex;
             justify-content: center;
             position: relative;
-            margin-top: 28px;
+            margin-top: 18px;
             
             /* Collapse by default */
             opacity: 0;
@@ -983,23 +986,23 @@
         .tree-children::before {
             content: '';
             position: absolute;
-            top: -28px;
+            top: -18px;
             left: 50%;
             width: 2px;
-            height: 28px;
+            height: 18px;
             background: var(--border);
         }
         .tree-branch-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 15px;
+            padding: 0 4px;
             position: relative;
         }
         .tree-branch-wrapper::before {
             content: '';
             position: absolute;
-            top: -28px;
+            top: -18px;
             width: 50%;
             height: 2px;
             background: var(--border);
@@ -1015,21 +1018,21 @@
         }
         .branch-label {
             position: absolute;
-            top: -22px;
-            font-size: 0.7rem;
+            top: -15px;
+            font-size: 0.6rem;
             font-weight: 700;
             background: var(--bg-main);
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 1px 4px;
+            border-radius: 8px;
             border: 1px solid var(--border);
             color: var(--text-secondary);
             z-index: 6;
         }
         .tree-branch-wrapper:first-child .branch-label {
-            right: calc(50% + 5px);
+            right: calc(50% + 4px);
         }
         .tree-branch-wrapper:last-child .branch-label {
-            left: calc(50% + 5px);
+            left: calc(50% + 4px);
         }
         
         /* Pulse effect for selected leaf */
@@ -2140,6 +2143,37 @@
             container.innerHTML = html;
         }
 
+        // Scale tree wrapper to fit the width of its container
+        function scaleTreeToFit() {
+            const container = document.querySelector('.tree-scroll-container');
+            const wrapper = document.querySelector('.tree-wrapper');
+            if (!container || !wrapper) return;
+            
+            // Reset scale first
+            wrapper.style.transform = 'none';
+            wrapper.style.width = 'auto';
+            wrapper.style.marginBottom = '0px';
+            
+            const containerWidth = container.clientWidth - 20; // 10px padding on each side
+            const wrapperWidth = wrapper.scrollWidth;
+            
+            if (wrapperWidth > containerWidth && containerWidth > 0) {
+                const scaleFactor = containerWidth / wrapperWidth;
+                const finalScale = Math.max(0.4, scaleFactor * 0.98);
+                wrapper.style.transform = `scale(${finalScale})`;
+                wrapper.style.transformOrigin = 'top center';
+                
+                // Adjust margin bottom to prevent overlap with elements below
+                const wrapperHeight = wrapper.scrollHeight;
+                const scaledHeight = wrapperHeight * finalScale;
+                const marginNeeded = scaledHeight - wrapperHeight;
+                wrapper.style.marginBottom = marginNeeded + 'px';
+            }
+        }
+        
+        // Listen to window resizing
+        window.addEventListener('resize', scaleTreeToFit);
+
         // Decision Tree Drawing
         function drawDecisionTree() {
             const dtSection = document.getElementById('ml-decision-tree-section');
@@ -2152,6 +2186,9 @@
             
             dtSection.style.display = 'block';
             treeContainer.innerHTML = buildTreeHTML(decisionTree, true);
+            
+            // Auto-scale tree on load
+            setTimeout(scaleTreeToFit, 100);
         }
 
         // Helper to toggle nodes
@@ -2159,6 +2196,8 @@
             const wrapper = el.closest('.tree-node-wrapper');
             if (wrapper) {
                 wrapper.classList.toggle('node-expanded');
+                scaleTreeToFit();
+                setTimeout(scaleTreeToFit, 310);
             }
         }
 
