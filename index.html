@@ -893,9 +893,9 @@
             background: var(--bg-card);
             border: 2px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 8px 12px;
-            min-width: 130px;
-            max-width: 190px;
+            padding: 6px 10px;
+            min-width: 110px;
+            max-width: 160px;
             box-shadow: var(--shadow);
             z-index: 5;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -912,7 +912,7 @@
             border-color: #34d399;
         }
         .tree-node-title {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -920,12 +920,12 @@
             margin-bottom: 2px;
         }
         .tree-node-value {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         .tree-node-info {
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             color: var(--text-secondary);
             margin-top: 4px;
             border-top: 1px solid var(--border);
@@ -937,6 +937,22 @@
             height: 7px;
             border-radius: 50%;
             margin-right: 4px;
+        }
+        .expand-indicator {
+            font-size: 0.6rem;
+            margin-top: 4px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        body.dark-theme .expand-indicator {
+            color: #34d399;
+        }
+        .expand-indicator::after {
+            content: ' ➕';
+        }
+        .tree-node-wrapper.node-expanded > .tree-node-box .expand-indicator::after {
+            content: ' ➖';
+            color: var(--text-secondary);
         }
         
         .tree-children {
@@ -955,8 +971,8 @@
             overflow: hidden;
         }
 
-        /* Show when hovering the parent wrapper */
-        .tree-node-wrapper:hover > .tree-children {
+        /* Show when the parent node-wrapper has the node-expanded class */
+        .tree-node-wrapper.node-expanded > .tree-children {
             opacity: 1;
             max-height: 1500px;
             transform: scaleY(1);
@@ -2135,11 +2151,19 @@
             }
             
             dtSection.style.display = 'block';
-            treeContainer.innerHTML = buildTreeHTML(decisionTree);
+            treeContainer.innerHTML = buildTreeHTML(decisionTree, true);
         }
 
-        // Recursive tree builder (Static Version)
-        function buildTreeHTML(node) {
+        // Helper to toggle nodes
+        function toggleNode(el) {
+            const wrapper = el.closest('.tree-node-wrapper');
+            if (wrapper) {
+                wrapper.classList.toggle('node-expanded');
+            }
+        }
+
+        // Recursive tree builder (Static Version with Click Toggles)
+        function buildTreeHTML(node, isRoot = false) {
             if (!node) return '';
             
             if (node.is_leaf) {
@@ -2173,13 +2197,16 @@
             const leftChildHTML = buildTreeHTML(node.left);
             const rightChildHTML = buildTreeHTML(node.right);
             
+            const expandedClass = isRoot ? 'node-expanded' : '';
+            
             return `
-                <div class="tree-node-wrapper">
-                    <div class="tree-node-box split-node">
+                <div class="tree-node-wrapper ${expandedClass}">
+                    <div class="tree-node-box split-node" onclick="toggleNode(this)">
                         <div class="tree-node-title">Biomarker Split</div>
-                        <div class="tree-node-value" style="font-size:0.85rem;">${node.feature}</div>
-                        <div class="tree-node-value" style="font-family: monospace; font-size:0.85rem; margin-top:2px;">&le; ${node.threshold.toFixed(4)}</div>
+                        <div class="tree-node-value" style="font-size:0.75rem;">${node.feature}</div>
+                        <div class="tree-node-value" style="font-family: monospace; font-size:0.75rem; margin-top:2px;">&le; ${node.threshold.toFixed(4)}</div>
                         <div class="tree-node-info">Samples: ${node.samples}</div>
+                        <div class="expand-indicator"></div>
                     </div>
                     <div class="tree-children">
                         <div class="tree-branch-wrapper">
