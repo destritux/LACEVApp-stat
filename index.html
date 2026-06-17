@@ -893,56 +893,50 @@
             background: var(--bg-card);
             border: 2px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 12px 18px;
-            min-width: 170px;
-            max-width: 240px;
+            padding: 8px 12px;
+            min-width: 130px;
+            max-width: 190px;
             box-shadow: var(--shadow);
             z-index: 5;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             cursor: pointer;
             text-align: center;
         }
         .tree-node-box:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.03);
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        .tree-node-box.active-path {
             border-color: var(--primary);
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
-            background: var(--primary-light);
         }
-        body.dark-theme .tree-node-box.active-path {
-            background: rgba(52, 211, 153, 0.1);
+        body.dark-theme .tree-node-box:hover {
             border-color: #34d399;
-            box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
         }
         .tree-node-title {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-secondary);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .tree-node-value {
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-primary);
         }
         .tree-node-info {
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             color: var(--text-secondary);
-            margin-top: 6px;
+            margin-top: 4px;
             border-top: 1px solid var(--border);
-            padding-top: 4px;
+            padding-top: 2px;
         }
         .leaf-indicator {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 4px;
         }
         
         .tree-children {
@@ -950,6 +944,24 @@
             justify-content: center;
             position: relative;
             margin-top: 28px;
+            
+            /* Collapse by default */
+            opacity: 0;
+            max-height: 0;
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Show when hovering the parent wrapper */
+        .tree-node-wrapper:hover > .tree-children {
+            opacity: 1;
+            max-height: 1500px;
+            transform: scaleY(1);
+            pointer-events: auto;
+            overflow: visible;
         }
         /* Lines connecting parents and children */
         .tree-children::before {
