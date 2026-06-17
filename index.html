@@ -1222,11 +1222,15 @@
 
             <!-- Seção de Matriz de Acurácia -->
             <div class="section" id="ml-accuracy-section" style="display:none; margin-top: 35px;">
-                <h2>Matriz de Confusão e Acurácia do Classificador (Random Forest)</h2>
-                <p>Abaixo é exibido o desempenho do classificador Random Forest. A acurácia global reflete a capacidade do modelo de discriminar corretamente os diferentes tratamentos com base em dados de teste (ou validação).</p>
+                <h2>Matrizes de Confusão e Acurácia do Classificador (Random Forest)</h2>
+                <p>Abaixo é exibido o desempenho do classificador Random Forest. A acurácia global reflete a capacidade do modelo de discriminar corretamente todos os tratamentos simultaneamente com base em dados de teste.</p>
+                
                 <div class="confusion-matrix-wrapper">
                     <div class="confusion-matrix-card">
                         <h3 style="margin-top:0;">Matriz de Confusão</h3>
+                        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.4;">
+                            <strong>Como interpretar:</strong> As linhas representam a classe real das plantas, e as colunas mostram as previsões feitas pelo modelo de ML. A diagonal principal mostra as previsões corretas. Células fora da diagonal indicam erros de classificação (confusões). O gradiente verde destaca a densidade de amostras.
+                        </p>
                         <div id="confusion-matrix-container">
                             <i>Aguardando dados...</i>
                         </div>
@@ -1240,27 +1244,20 @@
                 
                 <div class="confusion-matrix-card" id="pairwise-accuracy-card" style="display:none; margin-top: 25px;">
                     <h3 style="margin-top:0;">Matriz de Acurácia Pareada (Classificação Binária par a par)</h3>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">Cada célula indica a acurácia de um classificador treinado para discriminar especificamente entre o par de classes da linha e coluna. Valores mais altos (em verde escuro) apontam para maior facilidade de diferenciação entre as duas classes.</p>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px; line-height:1.4;">
+                        <strong>Como interpretar:</strong> Cada célula representa a acurácia de um classificador treinado exclusivamente para discriminar entre o par de classes da linha e coluna correspondentes. Valores de 100% (verde escuro) indicam que o par de classes é perfeitamente distinguível pelos biomarkers. Valores de 50% indicam que as classes são fisiologicamente idênticas ou impossíveis de separar pelo modelo (equivalente a um palpite aleatório).
+                    </p>
                     <div id="pairwise-accuracy-container">
                         <i>Aguardando dados...</i>
                     </div>
                 </div>
             </div>
 
-            <!-- Seção de Árvore de Decisão Interativa -->
+            <!-- Seção de Árvore de Decisão -->
             <div class="section" id="ml-decision-tree-section" style="display:none; margin-top:35px;">
-                <h2>Árvore de Decisão Interativa e Simulador</h2>
-                <p>Veja as regras de divisão matemática extraídas para separar os tratamentos de forma hierárquica. Use os controles deslizantes para simular valores de biomarkers e ver qual classificação a árvore atribuiria à planta em tempo real.</p>
+                <h2>Árvore de Decisão baseada em Dados Reais</h2>
+                <p>Veja as regras de divisão matemática extraídas para separar os tratamentos de forma hierárquica baseada nos biomarkers fisiológicos do seu experimento.</p>
                 <div class="dt-layout-container">
-                    <!-- Simulador interativo -->
-                    <div class="simulator-card">
-                        <h3 style="margin-top:0;">Simulador de Biomarkers (Predição em Tempo Real)</h3>
-                        <div class="simulator-grid" id="dt-simulator-grid">
-                            <!-- Sliders serão injetados dinamicamente via JS -->
-                            <p><i>Nenhuma árvore carregada.</i></p>
-                        </div>
-                    </div>
-                    
                     <!-- Desenho da árvore -->
                     <div class="tree-scroll-container">
                         <div class="tree-wrapper" id="decision-tree-root-container">
@@ -2127,14 +2124,10 @@
             
             dtSection.style.display = 'block';
             treeContainer.innerHTML = buildTreeHTML(decisionTree);
-            
-            const featuresUsed = getTreeFeatures(decisionTree);
-            initTreeSimulator(featuresUsed);
-            updateTreePathTrace();
         }
 
-        // Recursive tree builder
-        function buildTreeHTML(node, path = 'root') {
+        // Recursive tree builder (Static Version)
+        function buildTreeHTML(node) {
             if (!node) return '';
             
             if (node.is_leaf) {
@@ -2155,7 +2148,7 @@
 
                 return `
                     <div class="tree-node-wrapper">
-                        <div class="tree-node-box leaf-node" id="dt-node-${path}" data-leaf="true" data-class="${node.class}">
+                        <div class="tree-node-box leaf-node">
                             <div class="tree-node-title">Predição</div>
                             <div class="tree-node-value" style="color: ${color};"><span class="leaf-indicator" style="background-color: ${color};"></span>${node.class}</div>
                             <div class="tree-node-info">Samples: ${node.samples}</div>
@@ -2165,12 +2158,12 @@
                 `;
             }
             
-            const leftChildHTML = buildTreeHTML(node.left, path + '-L');
-            const rightChildHTML = buildTreeHTML(node.right, path + '-R');
+            const leftChildHTML = buildTreeHTML(node.left);
+            const rightChildHTML = buildTreeHTML(node.right);
             
             return `
                 <div class="tree-node-wrapper">
-                    <div class="tree-node-box split-node" id="dt-node-${path}" data-feature="${node.feature}" data-threshold="${node.threshold}">
+                    <div class="tree-node-box split-node">
                         <div class="tree-node-title">Biomarker Split</div>
                         <div class="tree-node-value" style="font-size:0.85rem;">${node.feature}</div>
                         <div class="tree-node-value" style="font-family: monospace; font-size:0.85rem; margin-top:2px;">&le; ${node.threshold.toFixed(4)}</div>
@@ -2188,109 +2181,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        // Get all unique features used in splits
-        function getTreeFeatures(node, featureMap = {}) {
-            if (!node || node.is_leaf) return featureMap;
-            
-            if (!featureMap[node.feature]) {
-                featureMap[node.feature] = {
-                    min: Infinity,
-                    max: -Infinity,
-                    thresholds: []
-                };
-            }
-            featureMap[node.feature].thresholds.push(node.threshold);
-            getTreeFeatures(node.left, featureMap);
-            getTreeFeatures(node.right, featureMap);
-            return featureMap;
-        }
-
-        // Initialize simulator panel with sliders
-        function initTreeSimulator(featuresUsed) {
-            const grid = document.getElementById('dt-simulator-grid');
-            grid.innerHTML = '';
-            activeFeatureValues = {};
-            
-            Object.keys(featuresUsed).forEach(feature => {
-                let minVal = 0;
-                let maxVal = 1;
-                
-                if (boxplot && boxplot[feature]) {
-                    const classes = Object.keys(boxplot[feature]);
-                    let bMin = Infinity;
-                    let bMax = -Infinity;
-                    classes.forEach(c => {
-                        const stats = boxplot[feature][c];
-                        if (stats.min < bMin) bMin = stats.min;
-                        if (stats.max > bMax) bMax = stats.max;
-                    });
-                    if (bMin !== Infinity && bMax !== -Infinity) {
-                        minVal = bMin;
-                        maxVal = bMax;
-                    }
-                }
-                
-                if (minVal === maxVal) {
-                    minVal -= 1;
-                    maxVal += 1;
-                }
-                
-                const mid = (minVal + maxVal) / 2;
-                activeFeatureValues[feature] = mid;
-                
-                const sliderId = 'slider-' + feature.replace(/[^a-zA-Z0-9]/g, '_');
-                const step = (maxVal - minVal) / 100;
-                
-                const group = document.createElement('div');
-                group.className = 'slider-group';
-                group.innerHTML = `
-                    <div class="slider-header">
-                        <label for="${sliderId}">${feature}</label>
-                        <span class="slider-value" id="${sliderId}-val">${mid.toFixed(3)}</span>
-                    </div>
-                    <input type="range" class="slider-input" id="${sliderId}" min="${minVal}" max="${maxVal}" step="${step}" value="${mid}">
-                `;
-                
-                grid.appendChild(group);
-                
-                const input = group.querySelector('input');
-                input.addEventListener('input', (e) => {
-                    const val = parseFloat(e.target.value);
-                    activeFeatureValues[feature] = val;
-                    document.getElementById(sliderId + '-val').textContent = val.toFixed(3);
-                    updateTreePathTrace();
-                });
-            });
-        }
-
-        // Trace simulator decision path in tree UI
-        function updateTreePathTrace() {
-            document.querySelectorAll('.tree-node-box').forEach(el => el.classList.remove('active-path'));
-            
-            if (!decisionTree) return;
-            
-            let currentPath = 'root';
-            let currentNode = decisionTree;
-            
-            while (currentNode) {
-                const el = document.getElementById('dt-node-' + currentPath);
-                if (el) el.classList.add('active-path');
-                
-                if (currentNode.is_leaf) {
-                    break;
-                }
-                
-                const val = activeFeatureValues[currentNode.feature];
-                if (val !== undefined && val <= currentNode.threshold) {
-                    currentNode = currentNode.left;
-                    currentPath += '-L';
-                } else {
-                    currentNode = currentNode.right;
-                    currentPath += '-R';
-                }
-            }
         }
 
         // Função centralizada para carregar a estrutura na memória
