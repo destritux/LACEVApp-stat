@@ -2633,16 +2633,12 @@
                 }
             }
             
-            // Try getPixelForTick first (standard Category scale method in Chart.js v3/v4)
-            if (typeof xAxis.getPixelForTick === 'function') {
-                return xAxis.getPixelForTick(closestIdx);
-            } else if (typeof xAxis.getPixelForIndex === 'function') {
-                return xAxis.getPixelForIndex(closestIdx);
-            } else if (chart.data && chart.data.labels && chart.data.labels[closestIdx] !== undefined) {
+            // In Chart.js Category Scale, getPixelForValue using the label or index is the standard way
+            // to get the exact center of the data point
+            if (chart.data && chart.data.labels && chart.data.labels[closestIdx] !== undefined) {
                 return xAxis.getPixelForValue(chart.data.labels[closestIdx]);
-            } else {
-                return xAxis.getPixelForValue(closestIdx);
             }
+            return xAxis.getPixelForValue(closestIdx);
         }
 
         // Cluster Permutation Test Tab Logic
