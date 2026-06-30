@@ -803,6 +803,78 @@
             flex-direction: column;
             gap: 25px;
         }
+
+        /* Class Controls (Global, shown after load) */
+        .class-controls-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            transition: var(--transition);
+        }
+        .class-controls-card h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .class-controls-card h3::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+        .class-control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-main);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .class-control-item:hover {
+            border-color: var(--primary);
+        }
+        .class-control-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .class-control-item input[type="color"] {
+            border: none;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            cursor: pointer;
+            background: none;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        .class-control-item input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .class-control-item input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+        .class-control-item label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-primary);
+        }
         .simulator-card {
             background: var(--bg-main);
             border: 1px solid var(--border);
@@ -1097,6 +1169,7 @@
             <button class="tab-btn" onclick="switchTab('multivariate')">Multivariate</button>
             <button class="tab-btn" onclick="switchTab('resumos')">Means & Comparisons</button>
             <button class="tab-btn" onclick="switchTab('ols')">Pairwise OLS & ML</button>
+            <button class="tab-btn" onclick="switchTab('cluster')">Cluster Permutation Test</button>
             <button class="tab-btn" onclick="switchTab('glossario')">Glossary & Info</button>
         </div>
 
@@ -1114,6 +1187,9 @@
 
         <!-- Highlight Box (Global) -->
         <div id="highlight-container"></div>
+
+        <!-- Class Controls (Global, shown after load) -->
+        <div id="class-controls-container" style="display:none; margin-bottom: 25px;"></div>
 
         <!-- Tab 1: Interactive Dashboard -->
         <div id="tab-dashboard" class="tab-content active" style="display:none;">
@@ -1307,6 +1383,73 @@
             </div>
         </div>
 
+        <!-- Tab 5: Cluster Permutation Test -->
+        <div id="tab-cluster" class="tab-content" style="display:none;">
+            <div class="section">
+                <h2>Teste de Permutação Baseado em Clusters (CPT) para Séries Temporais</h2>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 20px;">
+                    Esta aba apresenta os resultados do <b>Teste de Permutação Baseado em Clusters (CPT)</b>. Em registros biológicos de alta resolução (com amostragem minuto a minuto), a aplicação de múltiplos testes estatísticos independentes a cada ponto no tempo inflaciona drasticamente a taxa de falsos positivos (Erro Tipo I) devido à forte autocorrelação temporal intrínseca desses sinais. Este framework não-paramétrico supera essa limitação ao agrupar pontos contíguos de divergência em clusters temporais e validar sua significância por simulações de permutação aleatória, controlando rigorosamente a taxa de erro da família de testes (FWER).
+                </p>
+                <div style="background-color: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; margin-bottom: 25px; font-size: 0.9rem; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); color: var(--text-primary);">
+                    <strong style="color: var(--primary); font-size: 0.95rem; font-family: 'Outfit', sans-serif; display: block; margin-bottom: 10px;">Como funciona a análise:</strong>
+                    <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                        <li><b>Mapeamento Estatístico Local:</b> Em cada minuto, realiza-se um teste estatístico de comparação. Se houver exatamente 2 classes ativas, aplica-se o teste <i>t de Welch</i> (paramétrico, para variâncias desiguais). Se houver 3 ou mais classes ativas, aplica-se a <i>ANOVA One-Way</i> (comparação global multigrupo).</li>
+                        <li><b>Formação de Clusters Temporais:</b> Pontos no tempo contíguos que apresentam diferença estatisticamente significativa local ($p_{local} < 0.05$) são agrupados em blocos (clusters). A força de cada bloco é a sua <i>massa</i> (soma dos valores absolutos de $t$ ou $F$ de cada minuto do bloco).</li>
+                        <li><b>Teste de Permutação:</b> Para corrigir a taxa de falsos positivos da família de testes (FWER), os rótulos dos grupos são aleatorizados (permutados) 1.000 vezes, calculando a massa máxima do cluster para cada simulação. Isso constrói uma distribuição nula exata sob a hipótese de que não há diferença real entre os grupos.</li>
+                        <li><b>Significância Corrigida ($p_{corrected} < 0.05$):</b> Apenas os clusters observados cuja massa supera a maioria das permutações são declarados significativos. Eles são mostrados como faixas sombreadas de destaque no gráfico acima.</li>
+                    </ul>
+                </div>
+                
+                <div class="control-panel" id="cluster-controls" style="display:none;">
+                    <div class="control-group">
+                        <label for="cluster-metric-select">Select Statistically Significant Metric (p < 0.05):</label>
+                        <select id="cluster-metric-select" onchange="updateClusterChart()" style="min-width: 350px;">
+                            <!-- Populated dynamically with passing metrics -->
+                        </select>
+                    </div>
+                </div>
+
+                <div id="cluster-no-significant-message" class="placeholder-box" style="display:none;">
+                    <h3>Nenhum Biomarker Significativo</h3>
+                    <p>Nenhuma característica fisiológica apresentou diferenças estatisticamente significativas entre as classes sob o teste de permutação baseado em clusters (p<sub>corrected</sub> < 0.05).</p>
+                </div>
+
+                <div id="cluster-chart-wrapper" style="display:none;">
+                    <div class="grid-2">
+                        <div class="chart-card" style="grid-column: span 2; min-height: 480px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
+                                <h3 id="cluster-chart-title" style="margin:0;">Temporal Evolution with Significant Clusters</h3>
+                                <button class="btn-save" onclick="saveChart('clusterChartCanvas', 'cluster_permutation_test')">Export PNG</button>
+                            </div>
+                            <div class="chart-container" style="height: 380px; width:100%;">
+                                <canvas id="clusterChartCanvas" style="height:380px; width:100%; display:block;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" style="margin-top: 30px;">
+                        <h3>Clusters Significativos Identificados (p<sub>corrected</sub> < 0.05)</h3>
+                        <div class="table-container">
+                            <table id="cluster-details-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cluster ID</th>
+                                        <th>Intervalo de Tempo (Minutos)</th>
+                                        <th>Massa do Cluster</th>
+                                        <th>P-Value Corrigido (Permutações)</th>
+                                        <th>Significativo?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tab 4: Glossário Científico -->
         <div id="tab-glossario" class="tab-content">
             <h2>Glossário Científico das Métricas</h2>
@@ -1378,15 +1521,10 @@
 
         // Cores premium com atribuição automática para QUALQUER nome de classe
         const basePalette = ['#10b981', '#06b6d4', '#6366f1', '#8b5cf6', '#f59e0b', '#f43f5e', '#ef4444', '#14b8a6', '#f97316'];
-        const classColors = new Proxy({}, {
-            get: function(target, prop) {
-                if (typeof prop !== 'string') return undefined;
-                if (!target[prop]) {
-                    target[prop] = basePalette[Object.keys(target).length % basePalette.length];
-                }
-                return target[prop];
-            }
-        });
+        let classColors = {};
+        let activeClasses = new Set();
+        let clusterAnalysis = null;
+        let clusterChart = null;
 
         // Handlers para o carregamento do arquivo JSON
         function handleFileSelect(evt) {
@@ -1423,6 +1561,7 @@
                         document.getElementById('comparison-table-container').innerHTML = data.comparison_table_html || '';
                         document.getElementById('ols-container').innerHTML = data.ols_html || '';
                         
+                        clusterAnalysis = data.cluster_analysis || null;
                         carregarDadosEstruturados(data.charts);
                         document.getElementById('btn-load-another').style.display = 'inline-block';
                     } else if (data.time_series && data.correlation && data.pca && data.importance && data.boxplot) {
@@ -1457,7 +1596,7 @@
             const clickedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
             if (clickedBtn) clickedBtn.classList.add('active');
 
-            const requiresData = ['dashboard', 'multivariate', 'ols'];
+            const requiresData = ['dashboard', 'multivariate', 'ols', 'cluster'];
             
             if (requiresData.includes(tabId) && !fullData) {
                 document.getElementById('no-data-placeholder').style.display = 'block';
@@ -1473,12 +1612,15 @@
 
             // Renderizar gráficos se os dados existirem
             if (fullData) {
+                renderClassControls();
                 if (tabId === 'dashboard') {
                     updateCharts();
                 } else if (tabId === 'multivariate') {
                     renderMultivariateTab();
                 } else if (tabId === 'ols') {
                     renderOlsTab();
+                } else if (tabId === 'cluster') {
+                    renderClusterTab();
                 }
             }
         }
@@ -1585,7 +1727,7 @@
             if (!boxplot || !boxplot[dataKey]) return;
             
             const metricStats = boxplot[dataKey];
-            const classes = Object.keys(metricStats).sort();
+            const classes = Object.keys(metricStats).sort().filter(c => activeClasses.has(c));
             if (classes.length === 0) return;
             
             let globalMin = Infinity;
@@ -1750,6 +1892,7 @@
             const textColor = isDark ? '#cbd5e1' : '#475569';
             
             Object.keys(dataset).sort().forEach(className => {
+                if (!activeClasses.has(className)) return;
                 const classData = dataset[className];
                 const values = classData.map(row => row[dataKey]);
                 
@@ -1866,6 +2009,7 @@
             
             const pcaDatasets = [];
             Object.keys(pca).sort().forEach(className => {
+                if (!activeClasses.has(className)) return;
                 const classData = pca[className];
                 const points = classData.map(row => ({
                     x: row.PC1,
@@ -2263,6 +2407,327 @@
             `;
         }
 
+        // Global Class Controls
+        function renderClassControls() {
+            const container = document.getElementById('class-controls-container');
+            if (!container || !fullData || !fullData.time_series) return;
+            
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            const isClusterTab = activeTabBtn && activeTabBtn.getAttribute('onclick').includes('cluster');
+            
+            let html = '<div class="class-controls-card">';
+            html += '<h3>Gerenciar Classes e Cores</h3>';
+            html += '<div style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px;">';
+            
+            const classes = Object.keys(fullData.time_series).sort();
+            classes.forEach(c => {
+                const color = classColors[c];
+                const isChecked = activeClasses.has(c) ? 'checked' : '';
+                
+                const checkboxHtml = isClusterTab 
+                    ? `<input type="checkbox" id="chk-${c}" ${isChecked} disabled style="cursor:not-allowed; opacity: 0.5;">` 
+                    : `<input type="checkbox" id="chk-${c}" ${isChecked} onchange="toggleClass('${c}', this.checked)">`;
+                
+                html += `
+                    <div class="class-control-item" style="${isClusterTab ? 'opacity: 0.8;' : ''}">
+                        ${checkboxHtml}
+                        <input type="color" value="${color}" onchange="changeClassColor('${c}', this.value)">
+                        <label for="chk-${c}" style="${isClusterTab ? 'cursor:not-allowed;' : ''}">${c}</label>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        function changeClassColor(c, newColor) {
+            classColors[c] = newColor;
+            redrawAllTabs();
+            // Re-render class controls to keep values in sync
+            renderClassControls();
+        }
+
+        function toggleClass(c, isVisible) {
+            if (isVisible) {
+                activeClasses.add(c);
+            } else {
+                activeClasses.delete(c);
+            }
+            redrawAllTabs();
+        }
+
+        function redrawAllTabs() {
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            if (activeTabBtn) {
+                const onclickText = activeTabBtn.getAttribute('onclick');
+                const match = onclickText.match(/'([^']+)'/);
+                if (match) {
+                    const tabId = match[1];
+                    if (tabId === 'dashboard') {
+                        updateCharts();
+                    } else if (tabId === 'multivariate') {
+                        renderMultivariateTab();
+                    } else if (tabId === 'cluster') {
+                        renderClusterTab();
+                    }
+                }
+            }
+        }
+
+        // Helper to get pixel position for a given minute on category scale
+        function getPixelForMinute(chart, minute) {
+            if (!chart || !chart.scales) return 0;
+            const xAxis = chart.scales.x;
+            if (!xAxis) return 0;
+            
+            // Find reference class data (first active class or any class)
+            let referenceClass = Array.from(activeClasses)[0];
+            if (!referenceClass) referenceClass = Object.keys(dataset)[0];
+            if (!referenceClass || !dataset[referenceClass]) return 0;
+            
+            const refData = dataset[referenceClass];
+            let closestIdx = 0;
+            let minDiff = Infinity;
+            for (let i = 0; i < refData.length; i++) {
+                const diff = Math.abs(refData[i].minute - minute);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIdx = i;
+                }
+            }
+            
+            // Try getPixelForIndex first, fallback to getPixelForValue
+            if (typeof xAxis.getPixelForIndex === 'function') {
+                return xAxis.getPixelForIndex(closestIdx);
+            } else if (chart.data && chart.data.labels && chart.data.labels[closestIdx] !== undefined) {
+                return xAxis.getPixelForValue(chart.data.labels[closestIdx]);
+            } else {
+                return xAxis.getPixelForValue(closestIdx);
+            }
+        }
+
+        // Cluster Permutation Test Tab Logic
+        function renderClusterTab() {
+            const select = document.getElementById('cluster-metric-select');
+            const controls = document.getElementById('cluster-controls');
+            const chartWrapper = document.getElementById('cluster-chart-wrapper');
+            const noSigMsg = document.getElementById('cluster-no-significant-message');
+            
+            if (clusterChart) {
+                clusterChart.destroy();
+                clusterChart = null;
+            }
+            
+            if (!clusterAnalysis) {
+                controls.style.display = 'none';
+                chartWrapper.style.display = 'none';
+                noSigMsg.style.display = 'block';
+                noSigMsg.querySelector('h3').textContent = 'Sem dados do teste de cluster';
+                noSigMsg.querySelector('p').textContent = 'O arquivo carregado não contém a análise de permutação baseada em clusters (atualize para o report_data.json mais recente).';
+                return;
+            }
+            
+            // Filter features that passed
+            const passingFeatures = [];
+            Object.keys(clusterAnalysis).forEach(feat => {
+                if (clusterAnalysis[feat].passed) {
+                    passingFeatures.push(feat);
+                }
+            });
+            
+            if (passingFeatures.length === 0) {
+                controls.style.display = 'none';
+                chartWrapper.style.display = 'none';
+                noSigMsg.style.display = 'block';
+                noSigMsg.querySelector('h3').textContent = 'Nenhum Biomarker Significativo';
+                noSigMsg.querySelector('p').textContent = 'Nenhuma característica fisiológica apresentou diferenças estatisticamente significativas entre as classes sob o teste de permutação baseado em clusters (p_corrected < 0.05).';
+                return;
+            }
+            
+            noSigMsg.style.display = 'none';
+            controls.style.display = 'block';
+            chartWrapper.style.display = 'block';
+            
+            // Populate select if it's different or empty
+            const currentVal = select.value;
+            select.innerHTML = '';
+            
+            // Map keys to readable text if possible
+            const mainSelect = document.getElementById('metric-select');
+            const optionMap = {};
+            Array.from(mainSelect.querySelectorAll('option')).forEach(opt => {
+                optionMap[opt.value] = opt.textContent;
+            });
+            
+            passingFeatures.forEach(feat => {
+                const text = optionMap[feat] || feat;
+                const opt = document.createElement('option');
+                opt.value = feat;
+                opt.textContent = text;
+                select.appendChild(opt);
+            });
+            
+            if (passingFeatures.includes(currentVal)) {
+                select.value = currentVal;
+            } else {
+                select.value = passingFeatures[0];
+            }
+            
+            updateClusterChart();
+        }
+
+        function updateClusterChart() {
+            const select = document.getElementById('cluster-metric-select');
+            const feat = select.value;
+            if (!feat || !clusterAnalysis || !clusterAnalysis[feat]) return;
+            
+            const featData = clusterAnalysis[feat];
+            const clusters = featData.clusters;
+            
+            // Identify significant clusters (p_corrected < 0.05)
+            const sigClusters = clusters.filter(c => c.p_corrected < 0.05);
+            
+            // Prepare line chart datasets
+            const lineDatasets = [];
+            let referenceClass = null;
+            let maxLen = 0;
+            
+            Object.keys(dataset).sort().forEach(className => {
+                if (!activeClasses.has(className)) return; // filter out removed classes
+                
+                const classData = dataset[className];
+                if (!classData || classData.length === 0) return;
+                
+                if (classData.length > maxLen) {
+                    maxLen = classData.length;
+                    referenceClass = className;
+                }
+                
+                const values = classData.map(row => row[feat]);
+                lineDatasets.push({
+                    label: className,
+                    data: values,
+                    borderColor: classColors[className] || '#cbd5e1',
+                    backgroundColor: (classColors[className] || '#cbd5e1') + '10',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    fill: false
+                });
+            });
+            
+            if (!referenceClass) {
+                if (clusterChart) clusterChart.destroy();
+                return;
+            }
+            
+            const labels = dataset[referenceClass].map(row => `${row.minute} min`);
+            
+            const isDark = document.body.classList.contains('dark-theme');
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+            
+            if (clusterChart) clusterChart.destroy();
+            
+            const ctx = document.getElementById('clusterChartCanvas').getContext('2d');
+            
+            // Define our inline plugin to shade significant cluster intervals
+            const highlightPlugin = {
+                id: 'clusterHighlight',
+                beforeDraw: (chart) => {
+                    if (!chart.scales) return;
+                    const ctx = chart.ctx;
+                    const xAxis = chart.scales.x;
+                    const yAxis = chart.scales.y;
+                    if (!xAxis || !yAxis) return;
+                    
+                    ctx.save();
+                    sigClusters.forEach(c => {
+                        const xStart = getPixelForMinute(chart, c.Start_Minute);
+                        const xEnd = getPixelForMinute(chart, c.End_Minute);
+                        if (xStart === undefined || xEnd === undefined || isNaN(xStart) || isNaN(xEnd)) return;
+                        
+                        const yTop = yAxis.top;
+                        const yBottom = yAxis.bottom;
+                        
+                        ctx.fillStyle = 'rgba(217, 119, 6, 0.15)'; // amber shade
+                        ctx.fillRect(xStart, yTop, xEnd - xStart, yBottom - yTop);
+                        
+                        ctx.strokeStyle = 'rgba(217, 119, 6, 0.5)';
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([4, 4]);
+                        ctx.beginPath();
+                        ctx.moveTo(xStart, yTop);
+                        ctx.lineTo(xStart, yBottom);
+                        ctx.moveTo(xEnd, yTop);
+                        ctx.lineTo(xEnd, yBottom);
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+                }
+            };
+            
+            clusterChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: lineDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: textColor, font: { family: 'Inter', weight: 500 } }
+                        },
+                        tooltip: {
+                            padding: 12,
+                            titleFont: { family: 'Outfit', size: 13 },
+                            bodyFont: { family: 'Inter' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time (Minutes)', color: textColor, font: { family: 'Outfit', weight: 600 } },
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { family: 'Inter' } }
+                        },
+                        y: {
+                            title: { display: true, text: feat, color: textColor, font: { family: 'Outfit', weight: 600 } },
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'Inter' } }
+                        }
+                    }
+                },
+                plugins: [highlightPlugin]
+            });
+            
+            // Populate table of significant clusters
+            const tbody = document.querySelector('#cluster-details-table tbody');
+            tbody.innerHTML = '';
+            
+            if (sigClusters.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum cluster significativo para esta métrica.</td></tr>';
+            } else {
+                sigClusters.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><b>Cluster ${c.Cluster_ID}</b></td>
+                        <td>${c.Start_Minute.toFixed(1)} min a ${c.End_Minute.toFixed(1)} min</td>
+                        <td>${c.Observed_Mass.toFixed(4)}</td>
+                        <td><span class="badge badge-success">${c.p_corrected < 0.001 ? '< 0.001' : c.p_corrected.toFixed(4)}</span></td>
+                        <td><span class="badge badge-success">Sim (p < 0.05)</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
         // Função centralizada para carregar a estrutura na memória
         function carregarDadosEstruturados(data) {
             fullData = data;
@@ -2275,6 +2740,18 @@
             decisionTree = data.decision_tree || null;
             pairwiseAccuracy = data.pairwise_accuracy || null;
             
+            // Initialize colors and active status
+            if (data.time_series) {
+                const classes = Object.keys(data.time_series).sort();
+                activeClasses = new Set(classes);
+                classes.forEach((c, idx) => {
+                    if (!classColors[c]) {
+                        classColors[c] = basePalette[idx % basePalette.length];
+                    }
+                });
+                renderClassControls();
+            }
+
             // Oculta elementos de upload e placeholders
             document.getElementById('data-loader-container').style.display = 'none';
             document.getElementById('no-data-placeholder').style.display = 'none';
@@ -2295,6 +2772,9 @@
             decisionTree = null;
             activeFeatureValues = {};
             pairwiseAccuracy = null;
+            clusterAnalysis = null;
+            classColors = {};
+            activeClasses.clear();
             
             // Clear HTML containers
             document.getElementById('experiment-description-text').innerHTML = 'Please load a report data file to view the description.';
@@ -2313,11 +2793,18 @@
             document.getElementById('ml-accuracy-section').style.display = 'none';
             document.getElementById('ml-decision-tree-section').style.display = 'none';
             
+            document.getElementById('class-controls-container').style.display = 'none';
+            document.getElementById('class-controls-container').innerHTML = '';
+            document.getElementById('cluster-controls').style.display = 'none';
+            document.getElementById('cluster-chart-wrapper').style.display = 'none';
+            document.getElementById('cluster-no-significant-message').style.display = 'none';
+            
             // Destroy existing charts
             if (lineChart) { lineChart.destroy(); lineChart = null; }
             if (barChart) { barChart.destroy(); barChart = null; }
             if (pcaChart) { pcaChart.destroy(); pcaChart = null; }
             if (importanceChart) { importanceChart.destroy(); importanceChart = null; }
+            if (clusterChart) { clusterChart.destroy(); clusterChart = null; }
             
             // Show upload UI
             document.getElementById('data-loader-container').style.display = 'block';
@@ -2350,6 +2837,7 @@
                         document.getElementById('comparison-table-container').innerHTML = data.comparison_table_html || '';
                         document.getElementById('ols-container').innerHTML = data.ols_html || '';
                         
+                        clusterAnalysis = data.cluster_analysis || null;
                         carregarDadosEstruturados(data.charts);
                         return;
                     }
