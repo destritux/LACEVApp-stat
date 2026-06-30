@@ -2951,38 +2951,15 @@
         }
 
         // Inicializar painéis de gráficos e gerenciar o carregamento híbrido
-        window.onload = async function() {
+        window.onload = function() {
             // Cenário A: O Python injetou os dados diretamente no HTML (para testes off-line se necessário)
             if (embeddedData && embeddedData.time_series) {
                 carregarDadosEstruturados(embeddedData);
                 return;
             }
 
-            // Cenário B: Tentativa de leitura automática via Fetch de report_data.json
-            try {
-                const response = await fetch('report_data.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.charts) {
-                        document.getElementById('experiment-description-text').innerHTML = data.experiment_description || 'No description.';
-                        document.getElementById('experiment-desc-section').style.display = 'block';
-                        document.getElementById('highlight-container').innerHTML = data.highlight_html || '';
-                        document.getElementById('interpretations-container').innerHTML = data.interpretations_html || '';
-                        document.getElementById('summary-table-container').innerHTML = data.summary_table_html || '';
-                        document.getElementById('comparison-table-container').innerHTML = data.comparison_table_html || '';
-                        document.getElementById('ols-container').innerHTML = data.ols_html || '';
-                        
-                        clusterAnalysis = data.cluster_analysis || null;
-                        carregarDadosEstruturados(data.charts);
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.log("Auto-load local bloqueado ou indisponível. Aguardando interação ou upload manual.");
-            }
-
             // Exibe a interface vazia para upload manual
-            switchTab('dashboard');
+            resetLoader();
         };
     </script>
 </body>
