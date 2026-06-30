@@ -1275,78 +1275,138 @@
                 Note: Click on classes in the line chart legend to hide or show specific curves.
             </p>
 
-            <!-- Guia de Métricas Fisiológicas -->
+            <!-- Guia de Métricas Fisiológicas e Métodos de Cálculo (Collapsible) -->
             <div class="section" style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px;">
-                <h2 style="font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 10px; color: var(--text-primary);">
-                    <span style="font-size: 1.5rem;">📖</span> Guia de Métricas Fisiológicas e Dinâmicas
-                </h2>
-                <p style="color: var(--text-secondary); margin-bottom: 25px; line-height: 1.6; font-size: 0.95rem;">
-                    Este guia detalha o significado biológico, a interpretação física e o método matemático de cálculo de cada biomarcador eletrofisiológico extraído dos sinais das plantas.
-                </p>
-                
-                <div class="grid-2" style="gap: 25px;">
-                    <!-- Card 1: Domínio do Tempo e Voltagem -->
-                    <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="color: var(--primary); margin-top:0; font-family: 'Outfit', sans-serif; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            <span>⚡</span> Domínio do Tempo (Voltagem Bruta)
-                        </h3>
-                        <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 15px;">
-                            Métricas clássicas baseadas diretamente nas flutuações de amplitude do sinal elétrico (diferença de potencial extracelular).
-                        </p>
-                        <ul style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); display: flex; flex-direction: column; gap: 8px;">
-                            <li><b>Média (Raw Mean):</b> Mede o deslocamento basal do potencial elétrico da planta. Mudanças na média indicam polarização ou despolarização prolongada do tecido celular.</li>
-                            <li><b>Variância (Raw Var):</b> Mede a dispersão global ou o ruído de fundo da voltagem. Reflete a magnitude da atividade elétrica local ativa nas células de transporte.</li>
-                            <li><b>Mínimo/Máximo (Raw Min/Max):</b> Extremos alcançados em cada janela. Picos abruptos indicam a ocorrência de potenciais de variação (VP) ou potenciais de ação (AP).</li>
-                        </ul>
-                    </div>
+                <details style="border: 1px solid var(--border); border-radius: var(--radius-md); background-color: var(--bg-card); box-shadow: var(--shadow-sm); overflow: hidden;">
+                    <summary style="padding: 18px 24px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; background-color: var(--bg-card); color: var(--text-primary); transition: background-color 0.2s;">
+                        <span style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.4rem;">📖</span> Guia do Usuário: Métricas Eletrofisiológicas e Métodos de Análise
+                        </span>
+                        <span class="accordion-icon" style="font-size: 0.85rem; color: var(--text-secondary);">Clique para expandir/recolher ▲/▼</span>
+                    </summary>
+                    <div style="padding: 24px; border-top: 1px solid var(--border); background-color: var(--bg-main); display: flex; flex-direction: column; gap: 30px;">
+                        
+                        <!-- PARTE 1: SIGNIFICAÇÃO DAS ABAS E CÁLCULOS ESTATÍSTICOS -->
+                        <div>
+                            <h3 style="margin-top: 0; font-family: 'Outfit', sans-serif; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; font-size: 1.25rem;">
+                                📊 Como Interpretar as Abas e Métodos de Cálculo
+                            </h3>
+                            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 15px;">
+                                Cada aba realiza um processamento matemático diferente sobre os dados eletrofisiológicos das plantas para extrair conclusões complementares:
+                            </p>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px;">
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">1. Dashboard (Evolução Temporal e Boxplots)</strong>
+                                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                                        <li><b>Evolução Temporal (Gráfico de Linha):</b> Plota a média móvel das réplicas de cada classe ao longo do tempo (minuto a minuto) para visualizar a trajetória da resposta celular.</li>
+                                        <li><b>Escala Normalizada (Z-Score):</b> Transforma os valores de voltagem para evidenciar desvios da linha de base de controle (Baseline). O cálculo em cada minuto $t$ é dado por:
+                                            <div style="font-family: monospace; padding: 6px; background-color: var(--bg-main); border-radius: 4px; margin: 5px 0; text-align: center; font-size: 0.8rem; color: var(--text-primary);">
+                                                Z(t) = ( X(t) - μ_baseline ) / σ_baseline
+                                            </div>
+                                            Onde <b>μ_baseline</b> e <b>σ_baseline</b> representam a média e o desvio padrão obtidos exclusivamente no intervalo inicial (tempo &le; 10 min, considerado estado de equilíbrio ou controle).
+                                        </li>
+                                        <li><b>Boxplots e Barras:</b> O gráfico de barras mostra a média integral de toda a série. O Boxplot mostra a distribuição estatística do minuto selecionado, incluindo a Mediana (linha interna), Quartis Q1 e Q3 (caixa), limites de dispersão normal (bigodes a 1.5 * IQR das bordas) e Outliers (pontos isolados).</li>
+                                    </ul>
+                                </div>
 
-                    <!-- Card 2: Complexidade Dinâmica e Caos -->
-                    <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="color: var(--primary); margin-top:0; font-family: 'Outfit', sans-serif; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            <span>🌀</span> Complexidade Dinâmica e Teoria do Caos
-                        </h3>
-                        <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 15px;">
-                            Capturam propriedades não-lineares, autossimilaridade e caos determinístico dos caminhos elétricos de sinalização.
-                        </p>
-                        <ul style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); display: flex; flex-direction: column; gap: 8px;">
-                            <li><b>Entropia de Amostra (SampEn) / Aproximada (ApEn):</b> Quantificam a imprevisibilidade do sinal. <i>SampEn elevada</i> indica que o sinal é dinamicamente complexo, ativo e rico em informação biológica. <i>SampEn baixa</i> reflete sinais repetitivos, monótonos ou inativos (ex: estresse extremo ou morte celular).</li>
-                            <li><b>DFA (Detrended Fluctuation Analysis):</b> Estima a memória temporal de longo prazo da série através do expoente de Hurst ($\alpha$). 
-                                <br>• $\alpha \approx 0.5$ representa ruído branco (sinal puramente aleatório e sem memória).
-                                <br>• $\alpha \approx 1.0$ indica ruído rosa ($1/f$), característico de sistemas biológicos saudáveis com regulação fractal adaptativa.
-                            </li>
-                            <li><b>Expoentes de Lyapunov (Lyap_r / Lyap_e):</b> Avaliam a taxa de divergência exponencial de trajetórias vizinhas no espaço de fase reconstruído. Expoentes positivos ($\lambda > 0$) provam a presença de <b>caos determinístico</b>, indicando que o sistema elétrico da planta é dinamicamente adaptativo e altamente sensível a perturbações externas (Rosenstein `Lyap_r` estima o maior expoente de forma direta; Eckmann-Ruelle `Lyap_e` calcula o espectro espectral jacobiano local).</li>
-                        </ul>
-                    </div>
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px;">
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">2. Multivariate & Heatmap (Projeção Espacial por PCA)</strong>
+                                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                                        <li><b>PCA (Análise de Componentes Principais):</b> Reduz a complexidade das 22 métricas calculadas em apenas 2 dimensões geométricas principais (PC1 e PC2), preservando a maior variabilidade possível dos dados.</li>
+                                        <li><b>Método de Cálculo:</b> O algoritmo centraliza e escala as 22 variáveis, calcula a matriz de covariância e extrai os autovetores correspondentes aos dois maiores autovalores. Classes que se separam claramente no espaço bidimensional do gráfico indicam estados fisiológicos distintos e facilmente distinguíveis na planta.</li>
+                                    </ul>
+                                </div>
 
-                    <!-- Card 3: Análise Espectral (Frequência) -->
-                    <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="color: var(--primary); margin-top:0; font-family: 'Outfit', sans-serif; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            <span>📊</span> Domínio da Frequência (FFT e PSD)
-                        </h3>
-                        <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 15px;">
-                            Decompõem o sinal de voltagem em frequências constituintes para mapear a energia de oscilação periódica.
-                        </p>
-                        <ul style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); display: flex; flex-direction: column; gap: 8px;">
-                            <li><b>FFT (Média e Variância):</b> Mapeamento espectral por Transformada Rápida de Fourier. Descreve a energia média contida nas componentes oscilatórias sinusoidais clássicas.</li>
-                            <li><b>PSD (Densidade Espectral de Potência - Multitaper):</b> Estima a potência do sinal por unidade de frequência utilizando o método robusto Multitaper (filtros ortogonais Slepian). Fornece uma estimativa de espectro altamente estável, com baixíssima variância e livre de vazamento espectral, ideal para sinais ruidosos de plantas.</li>
-                        </ul>
-                    </div>
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px;">
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">3. Resumos & Comparativos (Diferenças Relativas)</strong>
+                                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                                        <li><b>Diferença Percentual Relativa Bruta:</b> Para cada par de tratamentos ($C_A$ e $C_B$) e cada métrica, calcula-se a variação percentual da média de toda a série temporal:
+                                            <div style="font-family: monospace; padding: 6px; background-color: var(--bg-main); border-radius: 4px; margin: 5px 0; text-align: center; font-size: 0.8rem; color: var(--text-primary);">
+                                                Variação % = [ ( Média_B - Média_A ) / Média_A ] * 100
+                                            </div>
+                                            Isso permite identificar rapidamente a intensidade de ativação ou atenuação de uma métrica em uma classe quando comparada diretamente a outra.
+                                        </li>
+                                    </ul>
+                                </div>
 
-                    <!-- Card 4: Bandas Fisiológicas -->
-                    <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);">
-                        <h3 style="color: var(--primary); margin-top:0; font-family: 'Outfit', sans-serif; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                            <span>🌿</span> Bandas Espectrais Fisiológicas
-                        </h3>
-                        <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 15px;">
-                            Regiões espectrais específicas integradas, análogas às bandas do eletroencefalograma (EEG) humano.
-                        </p>
-                        <ul style="padding-left: 20px; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); display: flex; flex-direction: column; gap: 8px;">
-                            <li><b>ISO (Oscilações Infra-Lentas, 0.005 - 0.1 Hz):</b> Ritmos elétricos lentíssimos. Estão relacionados com os processos circadianos, regulação hormonal, bombeamento de água nas células do xilema e metabolismo global estável da planta.</li>
-                            <li><b>Delta (0.1 - 4 Hz) & Theta (4 - 8 Hz):</b> Frequências baixas e médias. Correlacionam-se com respostas hidráulicas lentas, estresse por seca, resposta a ferimentos mecânicos e transporte de íons ao longo do caule.</li>
-                            <li><b>Alpha (8 - 12 Hz) & Beta (12 - 30 Hz):</b> Frequências altas de sinalização elétrica rápida. Estão ligadas à despolarização ativa e rápida da membrana celular e à propagação de potenciais de ação rápidos induzidos por estímulos ambientais agudos (frio, calor, toque).</li>
-                        </ul>
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px;">
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">4. Pairwise OLS & ML (Regressão Linear e Modelos de Machine Learning)</strong>
+                                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                                        <li><b>Modelagem de Regressão OLS:</b> Ajusta um modelo linear estatístico <code>Métrica_Z ~ Classe_Tratamento</code> para testar a significância do efeito de cada tratamento. O modelo calcula o coeficiente ($\beta$, inclinação), o teste-$t$ e o $p$-valor de significância. Um $p < 0.05$ indica que a classe de tratamento causou uma alteração robusta na métrica em relação ao grupo de controle.</li>
+                                        <li><b>Importância das Variáveis (Random Forest):</b> Treina um algoritmo de aprendizado de máquina para classificar todas as classes simultaneamente e calcula a Importância de Gini (Mean Decrease in Impurity). Métricas no topo da lista possuem o maior poder preditivo para discernir os estados fisiológicos da planta.</li>
+                                        <li><b>Simulador de Árvore de Decisão:</b> Constrói regras de classificação lógicas sequenciais baseadas em limiares (ex: <i>"Se a entropia &le; X e a banda Delta > Y, então a planta pertence ao grupo Z"</i>), permitindo rastrear as decisões determinísticas do classificador.</li>
+                                    </ul>
+                                </div>
+
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 15px;">
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;">5. Teste de Permutação por Clusters (CPT)</strong>
+                                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary);">
+                                        <li><b>Cluster-Based Permutation (Massa e Significância):</b> Realiza testes de comparação ponto a ponto (teste <i>t</i> de Welch ou ANOVA One-Way) e reúne pontos consecutivos significativos ($p < 0.05$) em clusters. A <i>massa</i> observada do cluster é a soma de todos os estatísticos absolutos do bloco. Este valor é testado contra a distribuição empírica de 1.000 permutações para calcular o p-valor corrigido para comparações múltiplas.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PARTE 2: GUIA DE MÉTRICAS FISIOLÓGICAS -->
+                        <div>
+                            <h3 style="margin-top: 0; font-family: 'Outfit', sans-serif; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; font-size: 1.25rem;">
+                                🌿 Significado Fisiológico das Métricas
+                            </h3>
+                            <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 15px;">
+                                Detalhamento biológico e matemático dos 22 biomarcadores calculados das plantas:
+                            </p>
+                            <div class="grid-2" style="gap: 20px;">
+                                <!-- Card 1: Domínio do Tempo -->
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+                                    <h4 style="color: var(--text-primary); margin-top:0; font-family: 'Outfit', sans-serif; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                                        ⚡ Domínio do Tempo (Voltagem Bruta)
+                                    </h4>
+                                    <ul style="padding-left: 15px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+                                        <li><b>Média (Raw Mean):</b> Representa o potencial basal estável de repouso das membranas celulares da planta. Polarizações prolongadas sinalizam processos fisiológicos de longo prazo (ex: estresse osmótico/térmico).</li>
+                                        <li><b>Variância (Raw Var):</b> Mede a flutuação estatística global da energia elétrica. Revela a intensidade instantânea dos disparos elétricos celulares nas vizinhanças dos tecidos condutores.</li>
+                                        <li><b>Mínimo/Máximo (Raw Min/Max):</b> Os extremos absolutos atingidos em cada período de amostragem. Picos rápidos marcam a presença de potenciais de variação (VP) e potenciais de ação (AP).</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Card 2: Complexidade Dinâmica e Caos -->
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+                                    <h4 style="color: var(--text-primary); margin-top:0; font-family: 'Outfit', sans-serif; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                                        🌀 Complexidade e Caos determinístico
+                                    </h4>
+                                    <ul style="padding-left: 15px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+                                        <li><b>Entropia de Amostra (SampEn):</b> Mede o grau de irregularidade e complexidade do sinal temporal. Sinais biológicos saudáveis e ativos têm alta SampEn. Sinais lineares ou inativos indicam que a sinalização celular está suprimida.</li>
+                                        <li><b>DFA (Expoente de Hurst):</b> Estima a dependência de longo prazo (fractalidade). Um valor $\alpha \approx 0.5$ é ruído branco (sem memória); $\alpha \approx 1.0$ representa flutuação $1/f$ rosa, típico de sistemas autorregulados e adaptativos saudáveis.</li>
+                                        <li><b>Expoentes de Lyapunov (Lyap_r / Lyap_e):</b> Quantificam a estabilidade dinâmica do sinal elétrico (sensibilidade do atrator caótico). Valores positivos indicam a presença de <b>caos determinístico</b>, o qual reflete a capacidade de adaptação dinâmica e a plasticidade do sistema nervoso vegetal a estresses rápidos.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Card 3: Espectro de Frequência -->
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+                                    <h4 style="color: var(--text-primary); margin-top:0; font-family: 'Outfit', sans-serif; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                                        📊 Domínio da Frequência (FFT e PSD)
+                                    </h4>
+                                    <ul style="padding-left: 15px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+                                        <li><b>Transformada de Fourier (FFT):</b> Converte a voltagem do domínio do tempo para a frequência, estimando a magnitude das ondas oscilatórias periódicas básicas.</li>
+                                        <li><b>PSD (Densidade Espectral de Potência - Multitaper):</b> Calcula a densidade de potência do sinal com alta resolução espectral por meio de filtros ortogonais (Slepian tapers). É a técnica mais recomendada para remover ruído em sinais de biopotencial, garantindo estabilidade estatística.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Card 4: Bandas Fisiológicas -->
+                                <div style="background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+                                    <h4 style="color: var(--text-primary); margin-top:0; font-family: 'Outfit', sans-serif; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+                                        🌿 Bandas Fisiológicas Equivalentes
+                                    </h4>
+                                    <ul style="padding-left: 15px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+                                        <li><b>ISO (Infra-Slow, 0.005-0.1 Hz):</b> Associado a ritmos biológicos de longo prazo, como ritmos circadianos, fluxo hidráulico de água nas células do xilema e regulação geral de metabólitos da planta.</li>
+                                        <li><b>Delta (0.1-4 Hz) / Theta (4-8 Hz):</b> Frequências baixas e médias que refletem a regulação de seiva, variações de turgor celular, regulação estomática e propagação lenta de ferimentos ou estresse hídrico.</li>
+                                        <li><b>Alpha (8-12 Hz) / Beta (12-30 Hz):</b> Frequências rápidas associadas a potenciais elétricos de resposta rápida induzidos por estímulos ambientais súbitos (luminosidade, temperatura ou choques mecânicos).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </div>
+                </details>
             </div>
         </div>
 
